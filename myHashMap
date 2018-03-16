@@ -1,0 +1,111 @@
+public class MyHashMap<K, V> {
+    static class Node<K, V>{
+        final int hash;
+        final K key;
+        V value;
+        Node<K, V> next;
+        Node(int hash, K key, V value, Node<K, V> next){
+            this.hash = hash;
+            this.key = key;
+            this.value = value;
+            this.next = next;
+        }
+
+        public final K getKey(){
+            return key;
+        }
+        public final V getValue(){
+            return value;
+        }
+        public void setValue(V value){
+            this.value = value;
+        }
+        public final int hashCode(){
+            return key.hashCode() ^ value.hashCode();
+        }
+    }
+
+    static final int DEFAULT_CAPACITY = 16;
+    static final float DEFAULT_LOAD_FACTOR = 0.75f;
+
+    Node<K, V>[] table;
+    private int size = 0;
+    private int capacity = 1<<4;
+    private final float loadFactor;
+
+
+    MyHashMap(){
+        this(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR);
+    }
+
+    MyHashMap(int capacity, float loadFactor){
+        if(capacity<0){
+            throw new IllegalArgumentException("Illegal Capacity");
+        }
+        this.capacity = capacity;
+        this.loadFactor = loadFactor;
+        this.table = new Node[this.capacity];
+        this.size = 0;
+    }
+
+    private int hash(K key){
+        if(key == null)
+            return 0;
+        return key.hashCode() ^ (0>>>16);
+    }
+
+    private int getIndex(int hash){
+        return hash % capacity;
+    }
+
+    public void put(K key, V value){
+        int index = getIndex(hash(key));
+
+        Node cur = table[index];
+        if(cur==null){
+            table[index] = new Node<>(hash(key), key, value, null);
+        } else {
+            if(cur.hash == hash(key) && (cur.key==key || cur.key.equals(key))) {
+                cur.value = value;
+                return;
+            }
+            while(cur.next!=null){
+                if(cur.next.hash == hash(key) && (cur.next.key==key || cur.next.key.equals(key))) {
+                    cur.next.value = value;
+                    return;
+                }
+                cur = cur.next;
+            }
+            cur.next = new Node<>(hash(key), key, value, null);
+        }
+        size++;
+        if(size>(int) loadFactor * capacity){
+            resize();
+        }
+    }
+
+    public V get(K key){
+        int index = getIndex(hash(key));
+        Node<K, V> first = table[index];
+        if(first == null)
+            return null;
+        while(first!=null){
+            if(first.hash == hash(key) && (first.key==key || first.key.equals(key)))
+                return first.value;
+            first = first.next;
+        }
+        return null;
+    }
+
+    private final void resize(){
+
+    }
+
+    public boolean isEmpty(){
+        return this.size == 0;
+    }
+
+    public int size(){
+        return this.size;
+    }
+}
